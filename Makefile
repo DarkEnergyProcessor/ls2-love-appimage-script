@@ -25,7 +25,6 @@ LIBTHEORA_VERSION := 1.2.0alpha1
 LIBPNG_VERSION := 1.6.39
 FT_VERSION := 2.13.0
 BZIP2_VERSION := 1.0.8
-MPG123_VERSION := 1.31.3
 LIBMODPLUG_VERSION := 0.8.8.5
 
 # Output AppImage
@@ -233,23 +232,6 @@ $(FT_FILE)/build/Makefile: $(FT_FILE)/configure installdir/bzip2installed.txt in
 installdir/lib/libfreetype.so: $(FT_FILE)/build/Makefile
 	cd $(FT_FILE)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
 
-# Mpg123
-override MPG123_FILE := mpg123-$(MPG123_VERSION)
-
-$(MPG123_FILE).tar.bz2:
-	curl $(CURL_DOH_URL) -Lfo $(MPG123_FILE).tar.bz2 https://www.mpg123.de/download/$(MPG123_FILE).tar.bz2
-
-$(MPG123_FILE)/configure: $(MPG123_FILE).tar.bz2
-	tar xf $(MPG123_FILE).tar.bz2
-	touch $(MPG123_FILE)/configure
-
-$(MPG123_FILE)/builddir/Makefile: $(MPG123_FILE)/configure
-	mkdir -p $(MPG123_FILE)/builddir
-	cd $(MPG123_FILE)/builddir && $(CONFIGURE)
-
-installdir/lib/libmpg123.so: $(MPG123_FILE)/builddir/Makefile
-	cd $(MPG123_FILE)/builddir && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
-
 # libmodplug
 override LIBMODPLUG_FILE := libmodplug-$(LIBMODPLUG_VERSION)
 
@@ -284,7 +266,7 @@ override LOVE_PATH := love2d-$(LOVE_BRANCH)
 $(LOVE_PATH)/CMakeLists.txt:
 	git clone --depth 1 -b $(LOVE_BRANCH) https://github.com/love2d/love $(LOVE_PATH)
 
-$(LOVE_PATH)/configure: $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1.so installdir/lib/libmodplug.so installdir/lib/libmpg123.so installdir/lib/libfreetype.so installdir/lib/libopenal.so installdir/lib/libz.so installdir/lib/libtheora.so installdir/lib/libvorbis.so installdir/lib/libogg.so installdir/lib/libSDL2.so
+$(LOVE_PATH)/configure: $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1.so installdir/lib/libmodplug.so installdir/lib/libfreetype.so installdir/lib/libopenal.so installdir/lib/libz.so installdir/lib/libtheora.so installdir/lib/libvorbis.so installdir/lib/libogg.so installdir/lib/libSDL2.so
 	cd $(LOVE_PATH) && bash platform/unix/genmodules
 	cp $(LOVE_PATH)/platform/unix/configure.ac $(LOVE_PATH) && cp $(LOVE_PATH)/platform/unix/Makefile.am $(LOVE_PATH)
 	cd $(LOVE_PATH) && autoheader
@@ -355,7 +337,7 @@ else
 	cd squashfs-root/usr/lib && ../../AppRun ../../../installdir2 ../../../$(APPIMAGE_OUTPUT)
 endif
 
-getdeps: $(CMAKE) appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(LIBPNG_FILE).tar.gz $(BROTLI_PATH)/CMakeLists.txt $(BZIP2_FILE).tar.gz $(FT_FILE).tar.gz $(MPG123_FILE).tar.bz2 $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt
+getdeps: $(CMAKE) appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(LIBPNG_FILE).tar.gz $(BROTLI_PATH)/CMakeLists.txt $(BZIP2_FILE).tar.gz $(FT_FILE).tar.gz $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt
 
 AppImage: $(APPIMAGE_OUTPUT)
 
