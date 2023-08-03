@@ -262,12 +262,19 @@ installdir/lib/libluajit-5.1.so: $(LUAJIT_PATH)/Makefile
 	cd $(LUAJIT_PATH) && make install PREFIX=$(INSTALLPREFIX)
 	cd $(LUAJIT_PATH) && make clean
 
-# FFmpeg Headers
+# FFmpeg
 override FFMPEG_PATH := ffmpeg-$(FFMPEG_BRANCH)
 
 $(FFMPEG_PATH)/README.md:
 	git clone --depth 1 -b $(FFMPEG_BRANCH) https://github.com/FFmpeg/FFmpeg $(FFMPEG_PATH)
 	touch -c $(FFMPEG_PATH)/README.md
+
+$(FFMPEG_PATH)/build/config.h: $(FFMPEG_PATH)/README.md
+	mkdir -p $(FFMPEG_PATH)/build
+	cd $(FFMPEG_PATH)/build && ../configure --prefix=$(FFMPEG_PATH)/build/installdir --disable-static --enable-shared --disable-programs --disable-doc --disable-avdevice --disable-postproc --disable-avfilter --disable-network --disable-encoders --disable-muxers --disable-bsfs --disable-hwaccels
+
+$(FFMPEG_PATH)/build/installdir/include/libavcodec/avcodec.h: $(FFMPEG_PATH)/build/config.h
+	cd $(FFMPEG_PATH)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
 
 # lua-https
 override LUAHTTPS_PATH := lua-https-$(LUAHTTPS_BRANCH)
@@ -299,9 +306,9 @@ $(LOVE_PATH)/configure: $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1
 	cd $(LOVE_PATH) && autoconf -I$(INSTALLPREFIX)
 	cd $(LOVE_PATH) && automake -a
 
-$(LOVE_PATH)/build/Makefile: $(LOVE_PATH)/configure $(FFMPEG_PATH)/README.md
+$(LOVE_PATH)/build/Makefile: $(LOVE_PATH)/configure $(FFMPEG_PATH)/build/installdir/include/libavcodec/avcodec.h
 	mkdir -p $(LOVE_PATH)/build
-	cd $(LOVE_PATH)/build && CFLAGS="-I$(INSTALLPREFIX)/include -I$(FFMPEG_PATH)" PKG_CONFIG_PATH=$(INSTALLPREFIX)/lib/pkgconfig LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' -L$(INSTALLPREFIX)/lib" ../configure --prefix=$(INSTALLPREFIX)
+	cd $(LOVE_PATH)/build && CPPFLAGS="-I$(INSTALLPREFIX)/include -I$(PWD)/$(FFMPEG_PATH)/build/installdir/include" PKG_CONFIG_PATH=$(INSTALLPREFIX)/lib/pkgconfig $(CONFIGURE)
 
 installdir/bin/love: $(LOVE_PATH)/build/Makefile
 	cd $(LOVE_PATH)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
