@@ -285,7 +285,7 @@ $(LOVE_PATH)/configure: $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1
 
 $(LOVE_PATH)/build/Makefile: $(LOVE_PATH)/configure $(FFMPEG_PATH)/libavcodec/avcodec.h
 	mkdir -p $(LOVE_PATH)/build
-	cd $(LOVE_PATH)/build && CFLAGS="-I$(INSTALLPREFIX)/include" "-I$(FFMPEG_PATH)" PKG_CONFIG_PATH=$(INSTALLPREFIX)/lib/pkgconfig LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' -L$(INSTALLPREFIX)/lib" ../configure --prefix=$(INSTALLPREFIX)
+	cd $(LOVE_PATH)/build && CFLAGS="-I$(INSTALLPREFIX)/include -I$(FFMPEG_PATH)" PKG_CONFIG_PATH=$(INSTALLPREFIX)/lib/pkgconfig LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' -L$(INSTALLPREFIX)/lib" ../configure --prefix=$(INSTALLPREFIX)
 
 installdir/bin/love: $(LOVE_PATH)/build/Makefile
 	cd $(LOVE_PATH)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
