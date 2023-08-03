@@ -1,6 +1,7 @@
 *.AppImage
 *.tar.bz2
 *.tar.gz
+debugsym/
 LuaJIT-*/
 SDL2-*/
 appimagetool
