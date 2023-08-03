@@ -18,8 +18,7 @@ OPENAL_BRANCH := 1.23.1
 BROTLI_BRANCH := v1.0.9
 ZLIB_BRANCH := v1.2.13
 FFMPEG_BRANCH := n5.0
-LIVESIM2_BRANCH := over_the_rainbow
-LIVESIM2_REPOSITORY := https://github.com/DarkEnergyProcessor/livesim2_async
+LUAHTTPS_BRANCH := main
 
 # Project versions (for downloadable tars)
 LIBOGG_VERSION := 1.3.5
@@ -270,12 +269,20 @@ $(FFMPEG_PATH)/libavcodec/avcodec.h $(FFMPEG_PATH)/libavformat/avformat.h $(FFMP
 	git clone --depth 1 -b $(FFMPEG_BRANCH) https://github.com/FFmpeg/FFmpeg $(FFMPEG_PATH)
 	touch -c $(FFMPEG_PATH)/libavcodec/avcodec.h $(FFMPEG_PATH)/libavformat/avformat.h $(FFMPEG_PATH)/libavutil/avutil.h $(FFMPEG_PATH)/libswscale/swscale.h $(FFMPEG_PATH)/libswresample/swresample.h
 
-# Livesim2
-override LIVESIM2_PATH := livesim2-$(LIVESIM2_BRANCH)
+# lua-https
+override LUAHTTPS_PATH := lua-https-$(LUAHTTPS_BRANCH)
 
-$(LIVESIM2_PATH)/main.lua:
-	git clone --depth 1 -b $(LIVESIM2_BRANCH) --recurse-submodules "$(LIVESIM2_REPOSITORY)" $(LIVESIM2_PATH)
-	touch -c $(LIVESIM2_PATH)/main.lua
+$(LUAHTTPS_PATH)/CMakeLists.txt:
+	git clone --depth 1 -b $(LUAHTTPS_BRANCH) https://github.com/love2d/lua-https $(LUAHTTPS_PATH)
+	touch -c $(LUAHTTPS_PATH)/CMakeLists.txt
+
+$(LUAHTTPS_PATH)/build/CMakeCache.txt: $(CMAKE) $(LUAHTTPS_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1.so
+	$(CMAKE) -B$(LUAHTTPS_PATH)/build -S$(LUAHTTPS_PATH) $(CMAKE_OPTS) -DUSE_OPENSSL_BACKEND=0
+
+installdir/lib/lua/5.1/https.so: $(LUAHTTPS_PATH)/build/CMakeCache.txt
+	$(CMAKE) --build $(LUAHTTPS_PATH)/build --target install -j $(NUMBER_OF_PROCESSORS)
+	mkdir -p installdir/lib/lua/5.1
+	mv installdir/https.so installdir/lib/lua/5.1/https.so
 
 # LOVE
 override LOVE_PATH := love2d-$(LOVE_BRANCH)
@@ -318,11 +325,7 @@ installdir/love.svg: $(LOVE_PATH)/platform/unix/love.svg
 installdir/license.txt: $(LOVE_PATH)/license.txt
 	cp $(LOVE_PATH)/license.txt installdir/license.txt
 
-installdir/share/livesim2/main.lua: $(LIVESIM2_PATH)/main.lua
-	cp $(LIVESIM2_PATH) installdir/share/livesim2
-	
-
-appimage-prepare $(APPIMAGE_OUTPUT)-debug.tar.gz: $(LIVESIM2_PATH)/main.lua installdir/AppRun installdir/love.desktop installdir/love.svg installdir/license.txt appimagetool
+appimage-prepare $(APPIMAGE_OUTPUT)-debug.tar.gz: installdir/AppRun installdir/love.desktop installdir/love.svg installdir/license.txt appimagetool installdir/lib/lua/5.1/https.so
 	mkdir -p installdir2/lib installdir2/bin
 	cp installdir/AppRun installdir2/AppRun
 	cp installdir/license.txt installdir2/license.txt
@@ -341,8 +344,10 @@ appimage-prepare $(APPIMAGE_OUTPUT)-debug.tar.gz: $(LIVESIM2_PATH)/main.lua inst
 			echo $$dll; \
 		fi \
 	done
+	mkdir -p installdir2/lib/lua/5.1
+	cp installdir/lib/lua/5.1/https.so installdir2/lib/lua/5.1/https.so
+	bash $(CURDIR)/separate_debug.sh installdir2/lib/lua/5.1/https.so debugsym/https.debug
 	cp -r installdir/share installdir2/
-	cp -r $(LIVESIM2_PATH) installdir2/share/livesim2
 	cd debugsym; tar -cvzf ../$(APPIMAGE_OUTPUT)-debug.tar.gz *
 	-rm -rf installdir2/share/aclocal
 	-rm -rf installdir2/share/man
