@@ -265,9 +265,9 @@ installdir/lib/libluajit-5.1.so: $(LUAJIT_PATH)/Makefile
 # FFmpeg Headers
 override FFMPEG_PATH := ffmpeg-$(FFMPEG_BRANCH)
 
-$(FFMPEG_PATH)/libavcodec/avcodec.h $(FFMPEG_PATH)/libavformat/avformat.h $(FFMPEG_PATH)/libavutil/avutil.h $(FFMPEG_PATH)/libswscale/swscale.h $(FFMPEG_PATH)/libswresample/swresample.h:
+$(FFMPEG_PATH)/README.md:
 	git clone --depth 1 -b $(FFMPEG_BRANCH) https://github.com/FFmpeg/FFmpeg $(FFMPEG_PATH)
-	touch -c $(FFMPEG_PATH)/libavcodec/avcodec.h $(FFMPEG_PATH)/libavformat/avformat.h $(FFMPEG_PATH)/libavutil/avutil.h $(FFMPEG_PATH)/libswscale/swscale.h $(FFMPEG_PATH)/libswresample/swresample.h
+	touch -c $(FFMPEG_PATH)/README.md
 
 # lua-https
 override LUAHTTPS_PATH := lua-https-$(LUAHTTPS_BRANCH)
@@ -299,7 +299,7 @@ $(LOVE_PATH)/configure: $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1
 	cd $(LOVE_PATH) && autoconf -I$(INSTALLPREFIX)
 	cd $(LOVE_PATH) && automake -a
 
-$(LOVE_PATH)/build/Makefile: $(LOVE_PATH)/configure $(FFMPEG_PATH)/libavcodec/avcodec.h
+$(LOVE_PATH)/build/Makefile: $(LOVE_PATH)/configure $(FFMPEG_PATH)/README.md
 	mkdir -p $(LOVE_PATH)/build
 	cd $(LOVE_PATH)/build && CFLAGS="-I$(INSTALLPREFIX)/include -I$(FFMPEG_PATH)" PKG_CONFIG_PATH=$(INSTALLPREFIX)/lib/pkgconfig LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' -L$(INSTALLPREFIX)/lib" ../configure --prefix=$(INSTALLPREFIX)
 
@@ -347,6 +347,7 @@ appimage-prepare $(APPIMAGE_OUTPUT)-debug.tar.gz: installdir/AppRun installdir/l
 	mkdir -p installdir2/lib/lua/5.1
 	cp installdir/lib/lua/5.1/https.so installdir2/lib/lua/5.1/https.so
 	bash $(CURDIR)/separate_debug.sh installdir2/lib/lua/5.1/https.so debugsym/https.debug
+	chmod +x installdir2/lib/lua/5.1/https.so
 	cp -r installdir/share installdir2/
 	cd debugsym; tar -cvzf ../$(APPIMAGE_OUTPUT)-debug.tar.gz *
 	-rm -rf installdir2/share/aclocal
@@ -364,7 +365,7 @@ else
 	cd squashfs-root/usr/lib && ../../AppRun ../../../installdir2 ../../../$(APPIMAGE_OUTPUT)
 endif
 
-getdeps: $(CMAKE) appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(LIBPNG_FILE).tar.gz $(BROTLI_PATH)/CMakeLists.txt $(BZIP2_FILE).tar.gz $(FT_FILE).tar.gz $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt $(FFMPEG_PATH)/libavcodec/avcodec.h
+getdeps: $(CMAKE) appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(LIBPNG_FILE).tar.gz $(BROTLI_PATH)/CMakeLists.txt $(BZIP2_FILE).tar.gz $(FT_FILE).tar.gz $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt $(FFMPEG_PATH)/README.md $(LUAHTTPS_PATH)/CMakeLists.txt
 
 AppImage: $(APPIMAGE_OUTPUT)
 
