@@ -17,6 +17,7 @@ LUAJIT_BRANCH := v2.1
 OPENAL_BRANCH := 1.23.1
 BROTLI_BRANCH := v1.0.9
 ZLIB_BRANCH := v1.2.13
+FFMPEG_BRANCH := n5.0
 
 # Project versions (for downloadable tars)
 LIBOGG_VERSION := 1.3.5
@@ -260,6 +261,13 @@ installdir/lib/libluajit-5.1.so: $(LUAJIT_PATH)/Makefile
 	cd $(LUAJIT_PATH) && make install PREFIX=$(INSTALLPREFIX)
 	cd $(LUAJIT_PATH) && make clean
 
+# FFmpeg Headers
+override FFMPEG_PATH := ffmpeg-$(FFMPEG_BRANCH)
+
+$(FFMPEG_PATH)/libavcodec/avcodec.h $(FFMPEG_PATH)/libavformat/avformat.h $(FFMPEG_PATH)/libavutil/avutil.h $(FFMPEG_PATH)/libswscale/swscale.h $(FFMPEG_PATH)/libswresample/swresample.h:
+	git clone --depth 1 -b $(FFMPEG_BRANCH) https://github.com/FFmpeg/FFmpeg $(FFMPEG_PATH)
+	touch -c $(FFMPEG_PATH)/libavcodec/avcodec.h $(FFMPEG_PATH)/libavformat/avformat.h $(FFMPEG_PATH)/libavutil/avutil.h $(FFMPEG_PATH)/libswscale/swscale.h $(FFMPEG_PATH)/libswresample/swresample.h
+
 # LOVE
 override LOVE_PATH := love2d-$(LOVE_BRANCH)
 
@@ -275,9 +283,9 @@ $(LOVE_PATH)/configure: $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1
 	cd $(LOVE_PATH) && autoconf -I$(INSTALLPREFIX)
 	cd $(LOVE_PATH) && automake -a
 
-$(LOVE_PATH)/build/Makefile: $(LOVE_PATH)/configure
+$(LOVE_PATH)/build/Makefile: $(LOVE_PATH)/configure $(FFMPEG_PATH)/libavcodec/avcodec.h
 	mkdir -p $(LOVE_PATH)/build
-	cd $(LOVE_PATH)/build && CFLAGS="-I$(INSTALLPREFIX)/include" PKG_CONFIG_PATH=$(INSTALLPREFIX)/lib/pkgconfig LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' -L$(INSTALLPREFIX)/lib" ../configure --prefix=$(INSTALLPREFIX)
+	cd $(LOVE_PATH)/build && CFLAGS="-I$(INSTALLPREFIX)/include" "-I$(FFMPEG_PATH)" PKG_CONFIG_PATH=$(INSTALLPREFIX)/lib/pkgconfig LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' -L$(INSTALLPREFIX)/lib" ../configure --prefix=$(INSTALLPREFIX)
 
 installdir/bin/love: $(LOVE_PATH)/build/Makefile
 	cd $(LOVE_PATH)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
