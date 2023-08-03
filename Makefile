@@ -271,7 +271,7 @@ $(FFMPEG_PATH)/README.md:
 
 $(FFMPEG_PATH)/build/config.h: $(FFMPEG_PATH)/README.md
 	mkdir -p $(FFMPEG_PATH)/build
-	cd $(FFMPEG_PATH)/build && ../configure --prefix=$(FFMPEG_PATH)/build/installdir --disable-static --enable-shared --disable-programs --disable-doc --disable-avdevice --disable-postproc --disable-avfilter --disable-network --disable-encoders --disable-muxers --disable-bsfs --disable-hwaccels
+	cd $(FFMPEG_PATH)/build && ../configure --prefix=$(FFMPEG_PATH)/build/installdir --disable-static --enable-shared --disable-programs --disable-doc --disable-avdevice --disable-postproc --disable-avfilter --disable-network --disable-encoders --disable-muxers --disable-bsfs --disable-hwaccels --disable-x86asm
 
 $(FFMPEG_PATH)/build/installdir/include/libavcodec/avcodec.h: $(FFMPEG_PATH)/build/config.h
 	cd $(FFMPEG_PATH)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
