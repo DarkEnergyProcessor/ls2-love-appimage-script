@@ -9,6 +9,7 @@ bzip2-*/
 cmake/
 cmake_install.sh
 cmakewrapper.sh
+ffmpeg-*/
 freetype-*/
 installdir/
 installdir2/
