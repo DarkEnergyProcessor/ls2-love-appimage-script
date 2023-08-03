@@ -24,8 +24,8 @@ export LUA_CPATH="$APPDIR/lib/lua/5.1/?.so;$LUA_CPATH"
 
 FUSE_PATH="$APPDIR/share/livesim2"
 
-if [ -z "$FUSE_PATH" ]; then
-    exec "$APPDIR/bin/love" "$@"
-else
+if [ -d "$FUSE_PATH" ]; then
     exec "$APPDIR/bin/love" --fused "$FUSE_PATH" "$@"
+else
+    exec "$APPDIR/bin/love" "$@"
 fi
