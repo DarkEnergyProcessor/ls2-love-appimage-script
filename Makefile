@@ -18,6 +18,8 @@ OPENAL_BRANCH := 1.23.1
 BROTLI_BRANCH := v1.0.9
 ZLIB_BRANCH := v1.2.13
 FFMPEG_BRANCH := n5.0
+LIVESIM2_BRANCH := over_the_rainbow
+LIVESIM2_REPOSITORY := https://github.com/DarkEnergyProcessor/livesim2_async
 
 # Project versions (for downloadable tars)
 LIBOGG_VERSION := 1.3.5
@@ -268,6 +270,13 @@ $(FFMPEG_PATH)/libavcodec/avcodec.h $(FFMPEG_PATH)/libavformat/avformat.h $(FFMP
 	git clone --depth 1 -b $(FFMPEG_BRANCH) https://github.com/FFmpeg/FFmpeg $(FFMPEG_PATH)
 	touch -c $(FFMPEG_PATH)/libavcodec/avcodec.h $(FFMPEG_PATH)/libavformat/avformat.h $(FFMPEG_PATH)/libavutil/avutil.h $(FFMPEG_PATH)/libswscale/swscale.h $(FFMPEG_PATH)/libswresample/swresample.h
 
+# Livesim2
+override LIVESIM2_PATH := livesim2-$(LIVESIM2_BRANCH)
+
+$(LIVESIM2_PATH)/main.lua:
+	git clone --depth 1 -b $(LIVESIM2_BRANCH) --recurse-submodules "$(LIVESIM2_REPOSITORY)" $(LIVESIM2_PATH)
+	touch -c $(LIVESIM2_PATH)/main.lua
+
 # LOVE
 override LOVE_PATH := love2d-$(LOVE_BRANCH)
 
@@ -309,7 +318,11 @@ installdir/love.svg: $(LOVE_PATH)/platform/unix/love.svg
 installdir/license.txt: $(LOVE_PATH)/license.txt
 	cp $(LOVE_PATH)/license.txt installdir/license.txt
 
-appimage-prepare $(APPIMAGE_OUTPUT)-debug.tar.gz: installdir/AppRun installdir/love.desktop installdir/love.svg installdir/license.txt appimagetool
+installdir/share/livesim2/main.lua: $(LIVESIM2_PATH)/main.lua
+	cp $(LIVESIM2_PATH) installdir/share/livesim2
+	
+
+appimage-prepare $(APPIMAGE_OUTPUT)-debug.tar.gz: $(LIVESIM2_PATH)/main.lua installdir/AppRun installdir/love.desktop installdir/love.svg installdir/license.txt appimagetool
 	mkdir -p installdir2/lib installdir2/bin
 	cp installdir/AppRun installdir2/AppRun
 	cp installdir/license.txt installdir2/license.txt
@@ -329,6 +342,7 @@ appimage-prepare $(APPIMAGE_OUTPUT)-debug.tar.gz: installdir/AppRun installdir/l
 		fi \
 	done
 	cp -r installdir/share installdir2/
+	cp -r $(LIVESIM2_PATH) installdir2/share/livesim2
 	cd debugsym; tar -cvzf ../$(APPIMAGE_OUTPUT)-debug.tar.gz *
 	-rm -rf installdir2/share/aclocal
 	-rm -rf installdir2/share/man

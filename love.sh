@@ -22,9 +22,7 @@ if [ -z "$LUA_CPATH" ]; then
 fi
 export LUA_CPATH="$APPDIR/lib/lua/5.1/?.so;$LUA_CPATH"
 
-# uncomment and edit to add your own game
-#FUSE_PATH="$APPDIR/my_game.love"
-#FUSE_PATH="$APPDIR/my_game"
+FUSE_PATH="$APPDIR/share/livesim2"
 
 if [ -z "$FUSE_PATH" ]; then
     exec "$APPDIR/bin/love" "$@"
