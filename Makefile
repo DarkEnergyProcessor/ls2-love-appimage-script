@@ -344,7 +344,6 @@ appimage-prepare $(APPIMAGE_OUTPUT)-debug.tar.gz: $(LIVESIM2_PATH)/main.lua inst
 	cp -r installdir/share installdir2/
 	cp -r $(LIVESIM2_PATH) installdir2/share/livesim2
 	cd debugsym; tar -cvzf ../$(APPIMAGE_OUTPUT)-debug.tar.gz *
-	-rm -rf installdir2/share/livesim2/.git
 	-rm -rf installdir2/share/aclocal
 	-rm -rf installdir2/share/man
 	-rm -rf installdir2/share/doc
