@@ -281,7 +281,7 @@ $(LIVESIM2_PATH)/main.lua:
 override LOVE_PATH := love2d-$(LOVE_BRANCH)
 
 $(LOVE_PATH)/CMakeLists.txt:
-	git clone --depth 1 -b $(LOVE_BRANCH) --recurse-submodules https://github.com/DarkEnergyProcessor/livesim3-love $(LOVE_PATH)
+	git clone --depth 1 -b $(LOVE_BRANCH) https://github.com/love2d/love $(LOVE_PATH)
 
 $(LOVE_PATH)/configure: $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1.so installdir/lib/libmodplug.so installdir/lib/libfreetype.so installdir/lib/libopenal.so installdir/lib/libz.so installdir/lib/libtheora.so installdir/lib/libvorbis.so installdir/lib/libogg.so installdir/lib/libSDL2.so
 	cd $(LOVE_PATH) && bash platform/unix/genmodules
