@@ -10,6 +10,9 @@ ARCH := $(shell uname -m)
 CMAKE_VERSION := 3.27.7
 CMAKE_URL := https://github.com/Kitware/CMake/releases/download/v$(CMAKE_VERSION)/cmake-$(CMAKE_VERSION)-linux-$(shell uname -m).sh
 
+# LOVE Repository URL
+LOVE_REPOSITORY := https://github.com/DarkEnergyProcessor/livesim3-love
+
 # Project branches (for git-based projects)
 LOVE_BRANCH := main
 SDL2_BRANCH := release-2.28.5
@@ -18,7 +21,6 @@ OPENAL_BRANCH := 1.23.1
 BROTLI_BRANCH := v1.0.9
 ZLIB_BRANCH := v1.3
 FFMPEG_BRANCH := n5.0
-LUAHTTPS_BRANCH := main
 
 # Project versions (for downloadable tars)
 LIBOGG_VERSION := 1.3.5
@@ -276,26 +278,11 @@ $(FFMPEG_PATH)/build/config.h: $(FFMPEG_PATH)/README.md
 $(FFMPEG_PATH)/build/installdir/include/libavcodec/avcodec.h: $(FFMPEG_PATH)/build/config.h
 	cd $(FFMPEG_PATH)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
 
-# lua-https
-override LUAHTTPS_PATH := lua-https-$(LUAHTTPS_BRANCH)
-
-$(LUAHTTPS_PATH)/CMakeLists.txt:
-	git clone --depth 1 -b $(LUAHTTPS_BRANCH) https://github.com/love2d/lua-https $(LUAHTTPS_PATH)
-	touch -c $(LUAHTTPS_PATH)/CMakeLists.txt
-
-$(LUAHTTPS_PATH)/build/CMakeCache.txt: $(CMAKE) $(LUAHTTPS_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1.so
-	$(CMAKE) -B$(LUAHTTPS_PATH)/build -S$(LUAHTTPS_PATH) $(CMAKE_OPTS) -DUSE_OPENSSL_BACKEND=0
-
-installdir/lib/lua/5.1/https.so: $(LUAHTTPS_PATH)/build/CMakeCache.txt
-	$(CMAKE) --build $(LUAHTTPS_PATH)/build --target install -j $(NUMBER_OF_PROCESSORS)
-	mkdir -p installdir/lib/lua/5.1
-	mv installdir/https.so installdir/lib/lua/5.1/https.so
-
 # LOVE
 override LOVE_PATH := love2d-$(LOVE_BRANCH)
 
 $(LOVE_PATH)/CMakeLists.txt:
-	git clone --depth 1 -b $(LOVE_BRANCH) https://github.com/love2d/love $(LOVE_PATH)
+	git clone --depth 1 -b $(LOVE_BRANCH) $(LOVE_REPOSITORY) $(LOVE_PATH)
 
 $(LOVE_PATH)/configure: $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1.so installdir/lib/libmodplug.so installdir/lib/libfreetype.so installdir/lib/libopenal.so installdir/lib/libz.so installdir/lib/libtheora.so installdir/lib/libvorbis.so installdir/lib/libogg.so installdir/lib/libSDL2.so
 	cd $(LOVE_PATH) && bash platform/unix/genmodules
@@ -332,7 +319,7 @@ installdir/love.svg: $(LOVE_PATH)/platform/unix/love.svg
 installdir/license.txt: $(LOVE_PATH)/license.txt
 	cp $(LOVE_PATH)/license.txt installdir/license.txt
 
-appimage-prepare $(APPIMAGE_OUTPUT)-debug.tar.gz: installdir/AppRun installdir/love.desktop installdir/love.svg installdir/license.txt appimagetool installdir/lib/lua/5.1/https.so
+appimage-prepare $(APPIMAGE_OUTPUT)-debug.tar.gz: installdir/AppRun installdir/love.desktop installdir/love.svg installdir/license.txt appimagetool
 	mkdir -p installdir2/lib installdir2/bin
 	cp installdir/AppRun installdir2/AppRun
 	cp installdir/license.txt installdir2/license.txt
@@ -351,10 +338,6 @@ appimage-prepare $(APPIMAGE_OUTPUT)-debug.tar.gz: installdir/AppRun installdir/l
 			echo $$dll; \
 		fi \
 	done
-	mkdir -p installdir2/lib/lua/5.1
-	cp installdir/lib/lua/5.1/https.so installdir2/lib/lua/5.1/https.so
-	bash $(CURDIR)/separate_debug.sh installdir2/lib/lua/5.1/https.so debugsym/https.debug
-	chmod +x installdir2/lib/lua/5.1/https.so
 	cp -r installdir/share installdir2/
 	cd debugsym; tar -cvzf ../$(APPIMAGE_OUTPUT)-debug.tar.gz *
 	-rm -rf installdir2/share/aclocal
@@ -372,7 +355,7 @@ else
 	cd squashfs-root/usr/lib && ../../AppRun ../../../installdir2 ../../../$(APPIMAGE_OUTPUT)
 endif
 
-getdeps: $(CMAKE) appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(LIBPNG_FILE).tar.gz $(BROTLI_PATH)/CMakeLists.txt $(BZIP2_FILE).tar.gz $(FT_FILE).tar.gz $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt $(FFMPEG_PATH)/README.md $(LUAHTTPS_PATH)/CMakeLists.txt
+getdeps: $(CMAKE) appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(LIBPNG_FILE).tar.gz $(BROTLI_PATH)/CMakeLists.txt $(BZIP2_FILE).tar.gz $(FT_FILE).tar.gz $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt $(FFMPEG_PATH)/README.md
 
 AppImage: $(APPIMAGE_OUTPUT)
 
